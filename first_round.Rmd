@@ -1,0 +1,46 @@
+---
+title: "Virome first filtering Blast vs NT Database"
+author: "Dch & EJGB"
+output: html_document
+fontsize: 12pt
+params:
+  fileasig: x
+  infofile: x
+---
+
+
+```{r include = FALSE}
+library(ggplot2)
+library(tidyverse)
+library(ggrepel)
+library(ggpubr)
+```
+
+##Loading of the Datasets##
+```{r, fig.width=10, fig.height=8}
+infoall<-read.table(params$infofile, header=T)
+names(infoall)[3] <- "Contig"
+names(infoall)[7] <- "GC_percentage"
+exp1e5assig <- read.table(params$fileasig, header=T)
+assigned_1e5<-exp1e5assig %>% left_join(infoall, by="Contig")
+##Graphics
+##GC vs Length
+ggplot(infoall, aes(y=Length, x=GC_percentage)) + geom_point(size=0.5) +  theme_bw(base_size = 16)
+##histogram Lenght and GC
+ggplot(infoall, aes(x=GC_percentage)) + geom_histogram(binwidth=1, colour="black", fill="gray50") + geom_vline(aes(xintercept=mean(GC_percentage, na.rm=T)), color="orange", linetype="dashed", size=1) + theme_bw(base_size = 16)
+ggplot(infoall, aes(x=Length)) + geom_histogram(binwidth=500, colour="black", fill="gray50") + geom_vline(aes(xintercept=mean(Length, na.rm=T)), color="orange", linetype="dashed", size=1) + theme_bw(base_size = 16)
+#both
+ggscatterhist(infoall, y="Length", x="GC_percentage", size=0.5, color="black", margin.params = list(fill = "gray50", color = "black", size = 0.2))
+
+#####Assignation 1e-5 from BLAST
+ggplot(assigned_1e5, aes(y=Length, x=GC_percentage, col=Domain)) + geom_point(size=1) +  theme_bw(base_size = 16)
+ggplot(assigned_1e5, aes(y=Length, x=GC_percentage, col=Domain)) + geom_point(size=1) +  theme_bw(base_size = 16) + facet_wrap(Domain~.)
+ggplot(assigned_1e5, aes(y=Length, col=Domain, x=PercentAssig)) + geom_point(size=1.3) +  theme_bw(base_size = 16) + facet_wrap(Domain~.)
+```
+
+#```{r, fig.width=10, fig.height=8}
+#cds<-read.table("./check_numbers/fastas_Domains/allinfo_cds.txt", header=T)
+#assigned_1e5_ncont <- assigned_1e5 %>% left_join(cds, by="Contig")
+#infoall_ncont <- infoall %>% left_join(cds, by="Contig")
+#ggplot(assigned_1e5_ncont, aes(y=Length, x=GC_percentage, col=as.factor(N_CDSs), label=Domain)) + geom_point(size=0.9) +  theme_bw(base_size = 16) + geom_text_repel(data = subset(assigned_1e5_ncont, N_CDSs > 8))
+#```
